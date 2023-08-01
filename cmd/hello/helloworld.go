@@ -1,34 +1,35 @@
 package main
 
 import (
-	"flag"
-  "fmt"
-	"net/http"
-
-	log "github.com/sirupsen/logrus"
+        "flag"
+        "fmt"
+        "github.com/gorilla/handlers"
+        log "github.com/sirupsen/logrus"
+        "net/http"
+        "os"
 )
 
 const msg = "Hello, world!"
 
+var (
+        addr  = flag.String("addr", ":8080", "listen address and port")
+        httpd = flag.Bool("httpd", false, "enable http server")
+)
+
 func handler(w http.ResponseWriter, r *http.Request) {
-  fmt.Fprintf(w, msg)
+        fmt.Fprintf(w, msg)
 }
 
 func main() {
-	var (
-		addr  = flag.String("addr", ":8080", "listen address and port")
-		httpd = flag.Bool("httpd", false, "enable http server")
-	)
+        flag.Parse()
 
-	flag.Parse()
+        if *httpd {
+                log.Printf("start %s on %s", "hello-world", *addr)
+                r := http.NewServeMux()
+                r.Handle("/", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(handler)))
+                http.ListenAndServe(*addr, handlers.CompressHandler(r))
+        } else {
+        				fmt.Println(msg)
+        }
 
-	if *httpd {
-		log.Printf("start %s on %s", "hello-world", *addr)
-		http.HandleFunc("/", handler)
-		if err := http.ListenAndServe(*addr, nil); err != nil {
-			log.Fatalf("%v", err)
-		}
-	} else {
-    fmt.Println(msg)
-  }
 }
