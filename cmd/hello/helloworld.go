@@ -9,15 +9,14 @@ import (
         "os"
 )
 
-const msg = "Hello, world!"
-
 var (
         addr  = flag.String("addr", ":8080", "listen address and port")
+        msg   = flag.String("msg", "Hello, world!", "the greeting to echo")
         httpd = flag.Bool("httpd", false, "enable http server")
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, msg)
+        fmt.Fprintf(w, *msg)
 }
 
 func main() {
@@ -29,7 +28,7 @@ func main() {
                 r.Handle("/", handlers.LoggingHandler(os.Stdout, http.HandlerFunc(handler)))
                 http.ListenAndServe(*addr, handlers.CompressHandler(r))
         } else {
-        				fmt.Println(msg)
+                fmt.Println(*msg)
         }
 
 }
